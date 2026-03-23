@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 img-src 'self' data:;
+                 style-src 'self';
+                 script-src 'self';
+                 connect-src 'self'">
+  <title>Print Preview - Technician Potential Commission Calculator - Bayshore Plumbers</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="payrollstyle.css" type="text/css">
+  <link rel="stylesheet" href="payrollprint.css" type="text/css" media="print">
+</head>
+<body class="print-page">
+  <main class="container" role="main">
+    <section class="print-page-toolbar no-print" aria-label="Print controls">
+      <div class="print-page-toolbar__top">
+        <h1 class="print-page-toolbar__title">Technician Potential Commission Document</h1>
+        <p class="print-page-toolbar__subtitle">Use the button below to open print preview. On iPhone/iPad, Share → Print is the best path.</p>
+      </div>
+
+      <div class="print-page-toolbar__actions">
+        <button type="button" id="printNowButton" class="btn-primary">Try Open Print Preview</button>
+        <button type="button" id="backToCalculatorButton" class="btn-print">Go Back to Calculator</button>
+      </div>
+
+      <div class="print-page-note">
+        Only the generated document below should print. Buttons, instructions, and toolbar must never print.
+      </div>
+    </section>
+
+    <div id="printPageStatus" class="print-page-status no-print" aria-live="polite">
+      Preparing print document…
+    </div>
+
+    <section id="printSheet" aria-hidden="false">
+      <div id="printRoot"></div>
+    </section>
+
+    <section id="printEmptyState" class="print-empty-state is-hidden no-print" aria-live="polite">
+      <h2>No print document found</h2>
+      <p>Please go back to the calculator, calculate again, and re-open print.</p>
+    </section>
+  </main>
+
+  <script src="com25-print.js"></script>
+</body>
+</html>
