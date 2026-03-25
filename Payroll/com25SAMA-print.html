@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 img-src 'self' data:;
+                 style-src 'self';
+                 script-src 'self';">
+  <title>Print - Technician Potential Commission</title>
+
+  <link rel="stylesheet" href="payrollstyle.css">
+  <link rel="stylesheet" href="payrollprint.css" media="print">
+</head>
+
+<body class="print-page">
+
+<div class="print-page-toolbar no-print">
+  <div class="print-page-toolbar__top">
+    <h1 class="print-page-toolbar__title">Print Preview</h1>
+    <p class="print-page-toolbar__subtitle">Best results on iPhone/iPad: Share → Print</p>
+  </div>
+
+  <div class="print-page-toolbar__actions">
+    <button id="printNowBtn" class="btn-primary">Try Open Print Preview</button>
+    <button id="goBackBtn" class="btn-print">Go Back to Calculator</button>
+  </div>
+
+  <div class="print-page-note">
+    Use the button above, or on iPhone/iPad use Share → Print.
+  </div>
+</div>
+
+<div class="print-page-status no-print">
+  Preparing document for printing…
+</div>
+
+<section id="printSheet">
+  <div id="printRoot"></div>
+</section>
+
+<script src="com25SAMA-print.js"></script>
+
+</body>
+</html>
