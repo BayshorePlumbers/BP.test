@@ -121,7 +121,7 @@
         </table>
 
         <!-- Labor Details -->
-        <table class="input-data">
+        <table class="input-data input-data--labor">
           <thead>
             <tr>
               <th colspan="4">
@@ -176,15 +176,15 @@
         </table>
 
         <!-- Payment Questions -->
-        <div class="question-section">
-          <div id="question1">
+        <div class="question-section question-cards" aria-label="Payment Questions">
+          <div id="question1" class="question-card">
             <label>Is the payment received?</label>
             <button type="button" class="dynamic-button qa-btn" data-q="1" data-a="yes" aria-label="Yes" aria-pressed="false">Yes</button>
             <button type="button" class="dynamic-button qa-btn" data-q="1" data-a="no" aria-label="No" aria-pressed="false">No</button>
             <button type="button" class="dynamic-button qa-btn" data-q="1" data-a="account" aria-label="BAYSHORE ACCOUNT" aria-pressed="false">BAYSHORE ACCOUNT</button>
           </div>
 
-          <div id="question2" class="is-hidden">
+          <div id="question2" class="question-card is-hidden">
             <label>How was the payment received?</label>
             <button type="button" class="dynamic-button qa-btn" data-q="2" data-a="debit" aria-label="Debit Card" aria-pressed="false">Debit Card</button>
             <button type="button" class="dynamic-button qa-btn" data-q="2" data-a="cash" aria-label="Cash" aria-pressed="false">Cash</button>
@@ -193,17 +193,17 @@
             <button type="button" class="dynamic-button qa-btn" data-q="2" data-a="check" aria-label="Check" aria-pressed="false">Check</button>
           </div>
 
-            <div id="questionCheck" class="is-hidden">
+            <div id="questionCheck" class="question-card is-hidden">
                 <label>Enter Check Number:</label>
                 <input type="text" id="checkNumber" name="checkNumber" placeholder="Enter Check Number" aria-label="Check Number">
             </div>
 
-            <div id="questionCash" class="is-hidden">
+            <div id="questionCash" class="question-card is-hidden">
                 <label>Enter Cash Amount:</label>
                 <input type="text" inputmode="decimal" id="cashAmount" name="cashAmount" value="$0.00" aria-label="Cash Amount">
             </div>
 
-          <div id="question3" class="is-hidden">
+          <div id="question3" class="question-card is-hidden">
             <label>Is 3% credit card fee added?</label>
             <button type="button" class="dynamic-button qa-btn" data-q="3" data-a="yes" aria-label="Yes" aria-pressed="false">Yes</button>
             <button type="button" class="dynamic-button qa-btn" data-q="3" data-a="no" aria-label="No" aria-pressed="false">No</button>
@@ -211,7 +211,7 @@
         </div>
 
         <!-- For Office Use Only -->
-        <table class="input-data">
+        <table class="input-data input-data--primary">
           <thead>
             <tr>
               <th colspan="4">For Office Use Only</th>
@@ -245,11 +245,11 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="button-group">
-          <button type="button" id="calculateBtn" aria-label="Calculate Commission">
+        <div class="button-group action-bar action-bar--main no-print">
+          <button type="button" id="calculateBtn" class="action-bar__btn" aria-label="Calculate Commission">
             Calculate Potential Commission
           </button>
-          <button type="button" id="printButton" aria-label="Print Document">
+          <button type="button" id="printButton" class="action-bar__btn action-bar__btn--primary" aria-label="Print Document">
             Print
           </button>
         </div>

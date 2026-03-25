@@ -14,6 +14,34 @@ let managerialAssistanceUsed = false;
 /* Base OE storage (user-editable base) */
 let baseOtherExpense = null;
 
+const COM25SAMA_PRINT_PAYLOAD_KEY = "com25SAMA_print_payload_v1";
+const COM25SAMA_PRINT_RETURN_KEY = "com25SAMA_return_v1";
+const COM25SAMA_PRINT_PAGE_URL = "com25SAMA-print.html";
+const COM25SAMA_CALCULATOR_URL = "com25SAMA.html";
+
+const PRINT_BUTTON_LOCK_MS = 2500;
+
+function setButtonBusy(button, busyText) {
+  if (!button) return;
+  if (!button.dataset.originalText) {
+    button.dataset.originalText = button.textContent.trim();
+  }
+  button.disabled = true;
+  button.classList.add("is-busy");
+  button.setAttribute("aria-disabled", "true");
+  button.textContent = busyText;
+}
+
+function clearButtonBusy(button) {
+  if (!button) return;
+  button.disabled = false;
+  button.classList.remove("is-busy");
+  button.setAttribute("aria-disabled", "false");
+  if (button.dataset.originalText) {
+    button.textContent = button.dataset.originalText;
+  }
+}
+
 /* ---------- Helpers (Bayshore Standard) ---------- */
 
 function beginEditHours(el) {
@@ -500,21 +528,18 @@ function applyTipBubbles() {
 /* ---------- Print state save/restore ---------- */
 
 function saveFormState() {
-  // Ensure canonical hidden fields match current variables before saving
   writeCanon();
-  
-  const ids = [
-    "tn","in","tp","pd","material","ja","oe","date",
-    "day1","day2","day3","day4","day5","ah","toh","notes",
-    "checkNumber","cashAmount",
-    // Canonical hidden fields (required to restore Q/A perfectly)
-    "canon_paymentReceived","canon_paymentMethod","canon_creditFeeAdded"
-  ];
+
+  const form = document.getElementById("commissionForm");
   const data = {};
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) data[id] = el.value;
-  });
+
+  if (form) {
+    form.querySelectorAll("input, select, textarea").forEach(el => {
+      if (!el.id) return;
+      if (el.type === "button" || el.type === "submit" || el.type === "reset") return;
+      data[el.id] = el.value;
+    });
+  }
 
   data.__paymentReceived = paymentReceived;
   data.__paymentMethod = paymentMethod;
@@ -523,7 +548,7 @@ function saveFormState() {
   data.__managerialAssistanceUsed = managerialAssistanceUsed;
   data.__baseOtherExpense = baseOtherExpense;
 
-    sessionStorage.setItem("com25SAMA_state_v1", JSON.stringify(data));
+  sessionStorage.setItem("com25SAMA_state_v1", JSON.stringify(data));
 }
 
 function restoreFormState() {
@@ -675,69 +700,71 @@ function buildPrintSheetHTML() {
   }
 
   return `
-    <div class="print-header">
-      <img src="BP.png" alt="BP logo" class="logo">
-      <h2>TECHNICIAN COMMISSION DOCUMENT</h2>
-    </div>
-
-    <div class="print-body">
-      <div class="no-break details-section">
-        <h3>DETAILS:</h3>
-        <table class="input-data">
-          <tr><th>Technician's Name:</th><td>${escapeHtml(technicianName)}</td></tr>
-          <tr><th>Job Address:</th><td>${escapeHtml(jobAddress)}</td></tr>
-          <tr><th>Invoice Number:</th><td>${escapeHtml(invoiceNumber)}</td></tr>
-          <tr><th>Date:</th><td>${escapeHtml(date)}</td></tr>
-          <tr><th>Project Hours:</th><td>${escapeHtml(projectHours)}</td></tr>
-          <tr><th>Material Expenses:</th><td>${escapeHtml(materialExpenses)}</td></tr>
-          <tr><th>Other Expenses (Base):</th><td>${escapeHtml(baseOEText)}</td></tr>
-          <tr><th>Credit Card Fee (3%):</th><td>${escapeHtml(ccFeeText)}</td></tr>
-          <tr><th>Other Expenses (Total):</th><td>${escapeHtml(totalOEText)}</td></tr>
-          <tr><th>Total Price:</th><td>${escapeHtml(totalPrice)}</td></tr>
-          <tr><th>Job Description/Notes:</th><td>${escapeHtml(notes)}</td></tr>
-        </table>
+    <div id="printRoot">
+      <div class="print-header">
+        <img src="BP.png" alt="BP logo" class="logo">
+        <h2>TECHNICIAN COMMISSION DOCUMENT</h2>
       </div>
 
-      <div class="no-break">
-        <h3>QUESTIONS &amp; ANSWERS:</h3>
-        <table class="input-data">
-          ${additionalRow}
-        </table>
-      </div>
+      <div class="print-body">
+        <div class="no-break details-section">
+          <h3>DETAILS:</h3>
+          <table class="input-data">
+            <tr><th>Technician's Name:</th><td>${escapeHtml(technicianName)}</td></tr>
+            <tr><th>Job Address:</th><td>${escapeHtml(jobAddress)}</td></tr>
+            <tr><th>Invoice Number:</th><td>${escapeHtml(invoiceNumber)}</td></tr>
+            <tr><th>Date:</th><td>${escapeHtml(date)}</td></tr>
+            <tr><th>Project Hours:</th><td>${escapeHtml(projectHours)}</td></tr>
+            <tr><th>Material Expenses:</th><td>${escapeHtml(materialExpenses)}</td></tr>
+            <tr><th>Other Expenses (Base):</th><td>${escapeHtml(baseOEText)}</td></tr>
+            <tr><th>Credit Card Fee (3%):</th><td>${escapeHtml(ccFeeText)}</td></tr>
+            <tr><th>Other Expenses (Total):</th><td>${escapeHtml(totalOEText)}</td></tr>
+            <tr><th>Total Price:</th><td>${escapeHtml(totalPrice)}</td></tr>
+            <tr><th>Job Description/Notes:</th><td>${escapeHtml(notes)}</td></tr>
+          </table>
+        </div>
 
-      <div class="no-break">
-        <h3>LABOR DETAILS:</h3>
-        <table class="input-data">
-          <tr><th>Day 1</th><th>Day 2</th><th>Day 3</th><th>Day 4</th></tr>
-          <tr>
-            <td>${escapeHtml(day1)}</td><td>${escapeHtml(day2)}</td><td>${escapeHtml(day3)}</td><td>${escapeHtml(day4)}</td>
-          </tr>
-        </table>
+        <div class="no-break">
+          <h3>QUESTIONS &amp; ANSWERS:</h3>
+          <table class="input-data">
+            ${additionalRow}
+          </table>
+        </div>
 
-        <table class="input-data">
-          <tr><th>Day 5</th><th>Additional Hours</th><th>Total Overtime Hours</th><th>Total Hours</th></tr>
-          <tr>
-            <td>${escapeHtml(day5)}</td><td>${escapeHtml(additionalHours)}</td><td>${escapeHtml(overtimeHours)}</td><td>${escapeHtml(totalHours)}</td>
-          </tr>
-        </table>
-      </div>
+        <div class="no-break">
+          <h3>LABOR DETAILS:</h3>
+          <table class="input-data">
+            <tr><th>Day 1</th><th>Day 2</th><th>Day 3</th><th>Day 4</th></tr>
+            <tr>
+              <td>${escapeHtml(day1)}</td><td>${escapeHtml(day2)}</td><td>${escapeHtml(day3)}</td><td>${escapeHtml(day4)}</td>
+            </tr>
+          </table>
 
-      <div class="no-break">
-        <h3>FOR OFFICE USE ONLY:</h3>
-        <table class="input-data">
-          <tr><th>SW21/RP21</th><th>WH32</th><th>RD15/UL15</th><th>BPP%</th></tr>
-          <tr>
-            <td>${escapeHtml(sw)}</td><td>${escapeHtml(wh)}</td><td>${escapeHtml(rd)}</td><td>${escapeHtml(bpp)}</td>
-          </tr>
-        </table>
-      </div>
+          <table class="input-data">
+            <tr><th>Day 5</th><th>Additional Hours</th><th>Total Overtime Hours</th><th>Total Hours</th></tr>
+            <tr>
+              <td>${escapeHtml(day5)}</td><td>${escapeHtml(additionalHours)}</td><td>${escapeHtml(overtimeHours)}</td><td>${escapeHtml(totalHours)}</td>
+            </tr>
+          </table>
+        </div>
 
-    <div class="no-break commission-details-section">
-        <h3>COMMISSION DETAILS:</h3>
-        <table class="input-data">
-          <tr><th>Technician Commission:</th><td>${escapeHtml(totalCommission)}</td></tr>
-          ${salesCommissionRow}
-        </table>
+        <div class="no-break">
+          <h3>FOR OFFICE USE ONLY:</h3>
+          <table class="input-data">
+            <tr><th>SW21/RP21</th><th>WH32</th><th>RD15/UL15</th><th>BPP%</th></tr>
+            <tr>
+              <td>${escapeHtml(sw)}</td><td>${escapeHtml(wh)}</td><td>${escapeHtml(rd)}</td><td>${escapeHtml(bpp)}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="no-break commission-details-section">
+          <h3>COMMISSION DETAILS:</h3>
+          <table class="input-data">
+            <tr><th>Technician Commission:</th><td>${escapeHtml(totalCommission)}</td></tr>
+            ${salesCommissionRow}
+          </table>
+        </div>
       </div>
     </div>
   `;
@@ -746,7 +773,9 @@ function buildPrintSheetHTML() {
 function syncCalculatorPrintSheet() {
   const printSheet = document.getElementById("printSheet");
   if (!printSheet) return;
+
   printSheet.innerHTML = buildPrintSheetHTML();
+  printSheet.setAttribute("aria-hidden", "false");
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -894,40 +923,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Calculate button
       const calcBtn = document.getElementById("calculateBtn");
-      if (calcBtn) calcBtn.addEventListener("click", calculateCommission);
-
-      const printButton = document.getElementById("printButton");
-      if (printButton) {
-        printButton.addEventListener("click", function (event) {
-          event.preventDefault();
-
-          const msg =
-            "I hereby confirm that all contents of this report are true and correct. I take full responsibility of the contents of this documents.";
-
-          const ok = window.confirm(msg);
-          if (!ok) return;
-
+        if (calcBtn) {
+          calcBtn.addEventListener("click", function () {
+          setButtonBusy(calcBtn, "Calculating...");
           calculateCommission();
-          saveFormState();
-
-          const html = buildPrintSheetHTML();
-          sessionStorage.setItem("com25SAMA_print_payload_v1", html);
-          sessionStorage.setItem("com25SAMA_return_url", window.location.href);
-
-          window.location.href = "com25SAMA-print.html";
+          setTimeout(() => clearButtonBusy(calcBtn), 400);
         });
       }
 
-      window.addEventListener("beforeprint", function () {
-        calculateCommission();
-        syncCalculatorPrintSheet();
-        document.body.classList.add("is-printing");
-      });
+        const printButton = document.getElementById("printButton");
 
-            window.addEventListener("afterprint", function () {
-        document.body.classList.remove("is-printing");
+        if (printButton) {
+          printButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            if (printButton.disabled) return;
+
+            const msg =
+              "I hereby confirm that all contents of this report are true and correct. I take full responsibility of the contents of this documents.";
+
+            const ok = window.confirm(msg);
+            if (!ok) return;
+
+            setButtonBusy(printButton, "Preparing Print Page...");
+            calculateCommission();
+            saveFormState();
+
+            sessionStorage.setItem(COM25SAMA_PRINT_PAYLOAD_KEY, buildPrintSheetHTML());
+            sessionStorage.setItem(COM25SAMA_PRINT_RETURN_KEY, COM25SAMA_CALCULATOR_URL);
+
+            setTimeout(() => {
+              window.location.href = COM25SAMA_PRINT_PAGE_URL;
+            }, 120);
+          });
+        }
+
+        window.addEventListener("beforeprint", () => {
+          calculateCommission();
+          document.body.classList.add("is-printing");
+        });
+
+        window.addEventListener("afterprint", () => {
+          document.body.classList.remove("is-printing");
+        });
       });
-});
 
 /* ---------- Commission math (UNCHANGED logic, only input parsing/display fixes) ---------- */
 
